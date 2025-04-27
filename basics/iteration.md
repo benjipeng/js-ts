@@ -71,3 +71,112 @@ const fruits: string[] = ['apple', 'banana', 'cherry', 'date'];
 const readonlyFruits: readonly string[] = ['apple', 'banana', 'cherry', 'date'];
 // or ReadonlyArray<string>
 ```
+
+1. `for...of` Loop
+
+```typescript
+console.log("--- for...of (TS) ---");
+// Using the mutable array
+for (const fruit: string of fruits) {
+  console.log(fruit.toUpperCase()); // We know 'fruit' is a string, methods auto-complete
+  if (fruit === 'cherry') {
+     console.log("Found the cherry!");
+     break;
+  }
+}
+
+console.log("--- for...of (TS with readonly) ---");
+// Using the readonly array - prevents accidental modification
+for (const fruit: string of readonlyFruits) {
+  console.log(fruit.toUpperCase());
+   // readonlyFruits.push('extra'); // Error! Property 'push' does not exist on type 'readonly string[]'.
+   // readonlyFruits[0] = 'apricot'; // Error! Index signature in type 'readonly string[]' only permits reading.
+}
+// Output (for the first loop):
+// --- for...of (TS) ---
+// APPLE
+// BANANA
+// CHERRY
+// Found the cherry!
+// Output (for the second loop, without errors uncommented):
+// --- for...of (TS with readonly) ---
+// APPLE
+// BANANA
+// CHERRY
+// DATE
+```
+
+2. `forEach()`
+> Type the parameters of the callback function (`fruit: string`, `index: number`). While TypeScript can infer these from the context of fruits.forEach, being explicit is often clearer, especially for complex callbacks.
+
+```typescript
+console.log("--- forEach (TS) ---");
+readonlyFruits.forEach((fruit: string, index: number) => {
+  // Types are checked for fruit (string) and index (number)
+  console.log(`Index ${index}: ${fruit.padStart(10, '.')}`); // String methods available
+});
+// Output:
+// --- forEach (TS) ---
+// Index 0: .....apple
+// Index 1: ...banana
+// Index 2: ....cherry
+// Index 3: ......date
+```
+
+3. Classic `for` Loop
+
+```typescript
+console.log("--- Classic for (TS) ---");
+for (let i = 0; i < readonlyFruits.length; i++) {
+  const fruit: string = readonlyFruits[i]; // Explicit type for the retrieved element
+  console.log(`Index ${i}: ${fruit}`);
+   // readonlyFruits[i] = 'test'; // Error! Index signature in type 'readonly string[]' only permits reading.
+  if (fruit === 'banana') {
+    console.log("Skipping banana");
+    continue;
+  }
+   if (i === 2) {
+      console.log("Stopping at index 2 (cherry)");
+      break;
+   }
+}
+// Output:
+// --- Classic for (TS) ---
+// Index 0: apple
+// Index 1: banana
+// Skipping banana
+// Index 2: cherry
+// Stopping at index 2 (cherry)
+```
+
+4. `map()` Method
+
+```typescript
+console.log("--- map (TS) ---");
+const fruitInfo: string[] = readonlyFruits.map((fruit: string): string => {
+  // The `: string` after the parameters declares the callback's return type.
+  return `<span class="math-inline">\{fruit\} \(</span>{fruit.length} letters)`; // TS knows fruit is string
+});
+console.log("Original:", readonlyFruits);
+console.log("Mapped:", fruitInfo);
+// Output:
+// --- map (TS) ---
+// Original: [ 'apple', 'banana', 'cherry', 'date' ]
+// Mapped: [ 'apple (5 letters)', 'banana (6 letters)', 'cherry (6 letters)', 'date (4 letters)' ]
+```
+
+5. `filter()` Method
+
+```typescript
+console.log("--- filter (TS) ---");
+const longFruits: string[] = readonlyFruits.filter((fruit: string): boolean => {
+   // Callback must return boolean
+   return fruit.length > 5;
+});
+console.log("Original:", readonlyFruits);
+console.log("Filtered (length > 5):", longFruits);
+// Output:
+// --- filter (TS) ---
+// Original: [ 'apple', 'banana', 'cherry', 'date' ]
+// Filtered (length > 5): [ 'banana', 'cherry' ]
+```
